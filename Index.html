@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบติดตามโครงการกองทุนตำบล</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #5b6472;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #f5f7fb;
+      --teal: #0f766e;
+      --blue: #2563eb;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --green: #15803d;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Tahoma, Arial, sans-serif;
+      background: #eef2f7;
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      min-height: 38px;
+      padding: 8px 12px;
+    }
+
+    button:hover { border-color: #94a3b8; }
+    button:disabled { cursor: wait; opacity: 0.6; }
+
+    .primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    .danger {
+      background: #fff5f5;
+      color: var(--red);
+      border-color: #fecaca;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      color: #0f2f3f;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(140px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      padding: 14px;
+      min-height: 92px;
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(240px, 2fr) repeat(3, minmax(150px, 1fr)) auto;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 88px;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.8fr) minmax(360px, 1.2fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .panel {
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 190px) 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #e8edf5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 999px;
+    }
+
+    .bar-fill.done { background: var(--green); }
+    .bar-fill.active { background: var(--amber); }
+    .bar-fill.wait { background: var(--blue); }
+    .bar-fill.cancel { background: var(--red); }
+
+    .table-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-head strong { font-size: 15px; }
+
+    .scroll {
+      max-height: 440px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #edf1f6;
+      padding: 9px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    td.money {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .project-name {
+      min-width: 280px;
+      max-width: 460px;
+      line-height: 1.45;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-done { background: #ecfdf5; color: #166534; border-color: #bbf7d0; }
+    .status-active { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .status-wait { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-cancel { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .row-actions button {
+      min-height: 32px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .modal.show { display: block; }
+
+    .modal-panel {
+      width: min(920px, 100%);
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    }
+
+    .modal-header,
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      justify-content: flex-end;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .form-grid label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 30;
+      display: none;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: #0f766e;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show { display: block; }
+    .toast.error { background: #b91c1c; }
+
+    #printArea { display: none; }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .kpis { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .filters button { width: 100%; }
+      .charts { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 10px; }
+      h1 { font-size: 20px; }
+      .kpis, .filters, .form-grid { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; }
+      .modal { padding: 8px; }
+      .modal-panel { margin: 8px auto; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .print-page {
+        padding: 18mm;
+        color: #111827;
+        font-size: 14px;
+      }
+      .print-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 4mm;
+      }
+      .print-subtitle {
+        text-align: center;
+        color: #475569;
+        margin-bottom: 8mm;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 0;
+      }
+      .print-table th,
+      .print-table td {
+        border: 1px solid #111827;
+        padding: 8px;
+        position: static;
+        background: #fff;
+        color: #111827;
+      }
+      .print-table th {
+        width: 28%;
+        text-align: left;
+      }
+      .signature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22mm;
+        margin-top: 24mm;
+        text-align: center;
+      }
+      .signature-line {
+        border-top: 1px dotted #111827;
+        padding-top: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div>
+        <h1>ระบบติดตามโครงการกองทุนตำบล</h1>
+        <div class="subtle" id="updatedAt">กำลังโหลดข้อมูล...</div>
+      </div>
+      <div class="actions">
+        <button type="button" id="importBtn">นำเข้าจากชีต</button>
+        <button type="button" id="syncBtn">ซิงก์กลับชีต</button>
+        <button type="button" id="refreshBtn">รีเฟรช</button>
+        <button type="button" class="primary" id="addBtn">เพิ่มโครงการ</button>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><span>จำนวนโครงการ</span><strong id="kpiTotal">0</strong></div>
+      <div class="kpi"><span>งบประมาณทั้งหมด</span><strong id="kpiBudget">0.00</strong></div>
+      <div class="kpi"><span>ใช้แล้ว</span><strong id="kpiUsed">0.00</strong></div>
+      <div class="kpi"><span>คงเหลือ</span><strong id="kpiRemain">0.00</strong></div>
+      <div class="kpi"><span>ร้อยละการใช้งบ</span><strong id="kpiPercent">0%</strong></div>
+    </section>
+
+    <section class="filters">
+      <input type="search" id="searchInput" placeholder="ค้นหาโครงการ สถานบริการ ประเภทกองทุน">
+      <select id="tambonFilter"><option value="">ทุกกองทุนตำบล</option></select>
+      <select id="statusFilter"><option value="">ทุกสถานะ</option></select>
+      <select id="serviceFilter"><option value="">ทุกสถานบริการ</option></select>
+      <button type="button" id="clearFilterBtn">ล้างตัวกรอง</button>
+    </section>
+
+    <section class="charts">
+      <div class="panel">
+        <h2>สถานะโครงการ</h2>
+        <div id="statusChart"></div>
+      </div>
+      <div class="panel">
+        <h2>งบประมาณรายตำบล</h2>
+        <div id="tambonChart"></div>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <div class="table-head">
+        <strong id="tableCount">0 รายการ</strong>
+        <span class="subtle">คลิกหัวคอลัมน์เพื่อเรียงข้อมูล</span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="no">ลำดับ</th>
+              <th data-sort="projectName">โครงการ</th>
+              <th data-sort="tambon">กองทุนตำบล</th>
+              <th data-sort="service">สถานบริการ</th>
+              <th data-sort="budget">งบทั้งหมด</th>
+              <th data-sort="used">ใช้แล้ว</th>
+              <th data-sort="remaining">คงเหลือ</th>
+              <th data-sort="status">สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="projectRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="projectModal" aria-hidden="true">
+    <div class="modal-panel">
+      <form id="projectForm">
+        <div class="modal-header">
+          <h2 id="modalTitle">เพิ่มโครงการ</h2>
+          <button type="button" id="closeModalBtn">ปิด</button>
+        </div>
+        <div class="form-grid">
+          <input type="hidden" name="id">
+          <label class="wide">
+            ชื่อโครงการ
+            <textarea name="projectName" required></textarea>
+          </label>
+          <label>
+            กองทุนตำบล
+            <input name="tambon" list="tambonList" required>
+          </label>
+          <label>
+            สถานบริการ
+            <input name="service" list="serviceList">
+          </label>
+          <label>
+            สังกัด
+            <input name="affiliation" list="affiliationList">
+          </label>
+          <label>
+            ประเภทกองทุน
+            <input name="fundType" list="fundTypeList">
+          </label>
+          <label>
+            งบประมาณทั้งหมด
+            <input name="budget" type="number" step="0.01" min="0" required>
+          </label>
+          <label>
+            ใช้แล้ว
+            <input name="used" type="number" step="0.01" min="0" required>
+          </label>
+          <label>
+            สถานะ
+            <select name="status" id="statusInput" required></select>
+          </label>
+          <label>
+            ปีงบประมาณ
+            <input name="fiscalYear" type="number" min="2500" max="2700">
+          </label>
+          <label class="wide">
+            หมายเหตุ
+            <textarea name="notes"></textarea>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancelBtn">ยกเลิก</button>
+          <button type="submit" class="primary">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <datalist id="tambonList"></datalist>
+  <datalist id="serviceList"></datalist>
+  <datalist id="affiliationList"></datalist>
+  <datalist id="fundTypeList"></datalist>
+  <div class="toast" id="toast"></div>
+  <div id="printArea"></div>
+
+  <script>
+    const state = {
+      projects: [],
+      metrics: null,
+      lists: { tambons: [], services: [], affiliations: [], fundTypes: [], statuses: [] },
+      sortKey: 'tambon',
+      sortDir: 1,
+      busy: false,
+    };
+
+    const money = new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const integer = new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEvents();
+      loadData();
+    });
+
+    function bindEvents() {
+      document.getElementById('addBtn').addEventListener('click', () => openForm());
+      document.getElementById('refreshBtn').addEventListener('click', loadData);
+      document.getElementById('syncBtn').addEventListener('click', syncLegacy);
+      document.getElementById('importBtn').addEventListener('click', importLegacy);
+      document.getElementById('closeModalBtn').addEventListener('click', closeForm);
+      document.getElementById('cancelBtn').addEventListener('click', closeForm);
+      document.getElementById('projectForm').addEventListener('submit', saveProject);
+      document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+      document.getElementById('projectRows').addEventListener('click', handleRowAction);
+
+      ['searchInput', 'tambonFilter', 'statusFilter', 'serviceFilter'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', render);
+      });
+
+      document.querySelectorAll('th[data-sort]').forEach((th) => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if (state.sortKey === key) state.sortDir *= -1;
+          else {
+            state.sortKey = key;
+            state.sortDir = 1;
+          }
+          render();
+        });
+      });
+    }
+
+    function runServer(functionName, ...args) {
+      return new Promise((resolve, reject) => {
+        if (!window.google || !google.script || !google.script.run) {
+          reject(new Error('กรุณาเปิดผ่าน Google Apps Script หรือเมนู Dashboard ใน Google Sheets'));
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler((error) => reject(new Error(error && error.message ? error.message : error)))
+          [functionName](...args);
+      });
+    }
+
+    async function loadData() {
+      setBusy(true);
+      try {
+        applyBootstrap(await runServer('apiBootstrap'));
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function importLegacy() {
+      if (!confirm('นำเข้าจากชีตรายตำบลเดิมและแทนที่ข้อมูลใน Projects ใช่หรือไม่')) return;
+      setBusy(true);
+      try {
+        const data = await runServer('apiImportLegacy', { replace: true });
+        applyBootstrap(data);
+        showToast(data.message + ' (' + data.importedCount + ' โครงการ)');
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function syncLegacy() {
+      setBusy(true);
+      try {
+        const data = await runServer('apiSyncLegacySheets');
+        applyBootstrap(data);
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function applyBootstrap(data) {
+      state.projects = data.projects || [];
+      state.metrics = data.metrics;
+      state.lists = data.lists || state.lists;
+      document.getElementById('updatedAt').textContent = 'อัปเดตล่าสุด ' + formatDateTime(data.updatedAt);
+      renderLists();
+      render();
+    }
+
+    function renderLists() {
+      fillSelect('tambonFilter', state.lists.tambons, 'ทุกกองทุนตำบล');
+      fillSelect('statusFilter', state.lists.statuses, 'ทุกสถานะ');
+      fillSelect('serviceFilter', state.lists.services, 'ทุกสถานบริการ');
+      fillDatalist('tambonList', state.lists.tambons);
+      fillDatalist('serviceList', state.lists.services);
+      fillDatalist('affiliationList', state.lists.affiliations);
+      fillDatalist('fundTypeList', state.lists.fundTypes);
+      fillSelect('statusInput', state.lists.statuses, '');
+    }
+
+    function fillSelect(id, values, firstLabel) {
+      const select = document.getElementById(id);
+      const current = select.value;
+      select.innerHTML = firstLabel ? '<option value="">' + escapeHtml(firstLabel) + '</option>' : '';
+      (values || []).forEach((value) => {
+        select.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>');
+      });
+      if ([...select.options].some((option) => option.value === current)) select.value = current;
+    }
+
+    function fillDatalist(id, values) {
+      document.getElementById(id).innerHTML = (values || [])
+        .map((value) => '<option value="' + escapeHtml(value) + '"></option>')
+        .join('');
+    }
+
+    function render() {
+      renderKpis();
+      renderCharts();
+      renderTable(filteredProjects());
+    }
+
+    function renderKpis() {
+      const m = state.metrics || { totalProjects: 0, budget: 0, used: 0, remaining: 0, usedPercent: 0 };
+      document.getElementById('kpiTotal').textContent = integer.format(m.totalProjects || 0);
+      document.getElementById('kpiBudget').textContent = money.format(m.budget || 0);
+      document.getElementById('kpiUsed').textContent = money.format(m.used || 0);
+      document.getElementById('kpiRemain').textContent = money.format(m.remaining || 0);
+      document.getElementById('kpiPercent').textContent = money.format(m.usedPercent || 0) + '%';
+    }
+
+    function renderCharts() {
+      const metrics = calculateClientMetrics(filteredProjects());
+      renderBarChart('statusChart', metrics.byStatus, 'count', statusClassForBar);
+      renderBarChart('tambonChart', metrics.byTambon, 'budget', () => 'budget');
+    }
+
+    function renderBarChart(targetId, rows, field, classResolver) {
+      const target = document.getElementById(targetId);
+      if (!rows.length) {
+        target.innerHTML = '<div class="empty">ไม่มีข้อมูล</div>';
+        return;
+      }
+
+      const max = Math.max(...rows.map((row) => Number(row[field]) || 0), 1);
+      target.innerHTML = rows.map((row) => {
+        const value = Number(row[field]) || 0;
+        const width = Math.max(2, (value / max) * 100);
+        const label = field === 'budget' ? money.format(value) : integer.format(value);
+        return '<div class="bar-row">' +
+          '<span>' + escapeHtml(row.name) + '</span>' +
+          '<div class="bar-track"><div class="bar-fill ' + classResolver(row.name) + '" style="width:' + width + '%"></div></div>' +
+          '<strong>' + label + '</strong>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filteredProjects() {
+      const query = document.getElementById('searchInput').value.trim().toLocaleLowerCase('th');
+      const tambon = document.getElementById('tambonFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const service = document.getElementById('serviceFilter').value;
+
+      return state.projects
+        .filter((project) => {
+          const haystack = [project.projectName, project.tambon, project.service, project.affiliation, project.fundType, project.status]
+            .join(' ')
+            .toLocaleLowerCase('th');
+          return (!query || haystack.includes(query)) &&
+            (!tambon || project.tambon === tambon) &&
+            (!status || project.status === status) &&
+            (!service || project.service === service);
+        })
+        .sort((a, b) => compareValue(a[state.sortKey], b[state.sortKey]) * state.sortDir);
+    }
+
+    function renderTable(rows) {
+      document.getElementById('tableCount').textContent = integer.format(rows.length) + ' รายการ';
+      const tbody = document.getElementById('projectRows');
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="empty">ไม่มีข้อมูลตามตัวกรอง</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((project) => (
+        '<tr>' +
+          '<td>' + escapeHtml(project.no || '') + '</td>' +
+          '<td class="project-name">' + escapeHtml(project.projectName) + '</td>' +
+          '<td>' + escapeHtml(project.tambon) + '</td>' +
+          '<td>' + escapeHtml(project.service || '-') + '</td>' +
+          '<td class="money">' + money.format(project.budget || 0) + '</td>' +
+          '<td class="money">' + money.format(project.used || 0) + '</td>' +
+          '<td class="money">' + money.format(project.remaining || 0) + '</td>' +
+          '<td><span class="pill ' + statusClass(project.status) + '">' + escapeHtml(project.status) + '</span></td>' +
+          '<td><div class="row-actions">' +
+            '<button type="button" data-action="print" data-id="' + escapeHtml(project.id) + '">พิมพ์</button>' +
+            '<button type="button" data-action="edit" data-id="' + escapeHtml(project.id) + '">แก้ไข</button>' +
+            '<button type="button" class="danger" data-action="delete" data-id="' + escapeHtml(project.id) + '">ลบ</button>' +
+          '</div></td>' +
+        '</tr>'
+      )).join('');
+    }
+
+    function handleRowAction(event) {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const project = state.projects.find((item) => item.id === button.dataset.id);
+      if (!project) return;
+
+      if (button.dataset.action === 'edit') openForm(project);
+      if (button.dataset.action === 'delete') deleteProject(project);
+      if (button.dataset.action === 'print') printProject(project.id);
+    }
+
+    function openForm(project) {
+      const form = document.getElementById('projectForm');
+      form.reset();
+      document.getElementById('modalTitle').textContent = project ? 'แก้ไขโครงการ' : 'เพิ่มโครงการ';
+      form.elements.id.value = project ? project.id : '';
+      form.elements.projectName.value = project ? project.projectName : '';
+      form.elements.tambon.value = project ? project.tambon : '';
+      form.elements.service.value = project ? project.service : '';
+      form.elements.affiliation.value = project ? project.affiliation : '';
+      form.elements.fundType.value = project ? project.fundType : '';
+      form.elements.budget.value = project ? project.budget : 0;
+      form.elements.used.value = project ? project.used : 0;
+      form.elements.status.value = project ? project.status : (state.lists.statuses[0] || 'ยังไม่ได้ดำเนินการ');
+      form.elements.fiscalYear.value = project ? project.fiscalYear : 2569;
+      form.elements.notes.value = project ? project.notes : '';
+      document.getElementById('projectModal').classList.add('show');
+    }
+
+    function closeForm() {
+      document.getElementById('projectModal').classList.remove('show');
+    }
+
+    async function saveProject(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const payload = {
+        id: form.elements.id.value,
+        projectName: form.elements.projectName.value,
+        tambon: form.elements.tambon.value,
+        service: form.elements.service.value,
+        affiliation: form.elements.affiliation.value,
+        fundType: form.elements.fundType.value,
+        budget: form.elements.budget.value,
+        used: form.elements.used.value,
+        status: form.elements.status.value,
+        fiscalYear: form.elements.fiscalYear.value,
+        notes: form.elements.notes.value,
+      };
+
+      setBusy(true);
+      try {
+        const data = await runServer('apiSaveProject', payload);
+        applyBootstrap(data);
+        closeForm();
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function deleteProject(project) {
+      if (!confirm('ลบโครงการ "' + project.projectName + '" ใช่หรือไม่')) return;
+      setBusy(true);
+      try {
+        const data = await runServer('apiDeleteProject', project.id);
+        applyBootstrap(data);
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function printProject(id) {
+      setBusy(true);
+      try {
+        const result = await runServer('apiGetProjectForPrint', id);
+        buildPrintArea(result.project, result.generatedAt);
+        window.print();
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function buildPrintArea(project, generatedAt) {
+      document.getElementById('printArea').innerHTML =
+        '<section class="print-page">' +
+          '<div class="print-title">แบบฟอร์มข้อมูลโครงการกองทุนตำบล</div>' +
+          '<div class="print-subtitle">พิมพ์วันที่ ' + escapeHtml(generatedAt) + '</div>' +
+          '<table class="print-table">' +
+            printRow('ชื่อโครงการ', project.projectName) +
+            printRow('กองทุนตำบล', project.tambon) +
+            printRow('สถานบริการ', project.service || '-') +
+            printRow('สังกัด', project.affiliation || '-') +
+            printRow('ประเภทกองทุน', project.fundType || '-') +
+            printRow('ปีงบประมาณ', project.fiscalYear || '-') +
+            printRow('สถานะ', project.status || '-') +
+            printRow('งบประมาณทั้งหมด', money.format(project.budget || 0) + ' บาท') +
+            printRow('ใช้แล้ว', money.format(project.used || 0) + ' บาท') +
+            printRow('คงเหลือ', money.format(project.remaining || 0) + ' บาท') +
+            printRow('หมายเหตุ', project.notes || '-') +
+          '</table>' +
+          '<div class="signature-grid">' +
+            '<div><div class="signature-line">ผู้รับผิดชอบโครงการ</div></div>' +
+            '<div><div class="signature-line">ผู้ตรวจสอบ</div></div>' +
+          '</div>' +
+        '</section>';
+    }
+
+    function printRow(label, value) {
+      return '<tr><th>' + escapeHtml(label) + '</th><td>' + escapeHtml(value) + '</td></tr>';
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('tambonFilter').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('serviceFilter').value = '';
+      render();
+    }
+
+    function calculateClientMetrics(projects) {
+      const groups = { byStatus: {}, byTambon: {} };
+      projects.forEach((project) => {
+        addClientMetric(groups.byStatus, project.status || '-', project);
+        addClientMetric(groups.byTambon, project.tambon || '-', project);
+      });
+      return {
+        byStatus: objectToMetricRows(groups.byStatus),
+        byTambon: objectToMetricRows(groups.byTambon),
+      };
+    }
+
+    function addClientMetric(bucket, name, project) {
+      if (!bucket[name]) bucket[name] = { name, count: 0, budget: 0, used: 0, remaining: 0 };
+      bucket[name].count += 1;
+      bucket[name].budget += Number(project.budget) || 0;
+      bucket[name].used += Number(project.used) || 0;
+      bucket[name].remaining += Number(project.remaining) || 0;
+    }
+
+    function objectToMetricRows(bucket) {
+      return Object.values(bucket).sort((a, b) => String(a.name).localeCompare(String(b.name), 'th'));
+    }
+
+    function compareValue(a, b) {
+      const numberA = Number(a);
+      const numberB = Number(b);
+      if (Number.isFinite(numberA) && Number.isFinite(numberB)) return numberA - numberB;
+      return String(a || '').localeCompare(String(b || ''), 'th');
+    }
+
+    function statusClass(status) {
+      if (status === 'ดำเนินการแล้ว') return 'status-done';
+      if (status === 'ระหว่างดำเนินการ') return 'status-active';
+      if (status === 'ยกเลิกดำเนินการ') return 'status-cancel';
+      return 'status-wait';
+    }
+
+    function statusClassForBar(status) {
+      if (status === 'ดำเนินการแล้ว') return 'done';
+      if (status === 'ระหว่างดำเนินการ') return 'active';
+      if (status === 'ยกเลิกดำเนินการ') return 'cancel';
+      return 'wait';
+    }
+
+    function formatDateTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value || '-';
+      return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function setBusy(value) {
+      state.busy = value;
+      document.querySelectorAll('button, input, select, textarea').forEach((element) => {
+        element.disabled = value;
+      });
+    }
+
+    function showToast(message, isError) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.toggle('error', Boolean(isError));
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 3600);
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
