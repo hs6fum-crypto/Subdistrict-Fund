@@ -1,0 +1,1777 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบติดตามโครงการกองทุนตำบล</title>
+  <style>
+    :root {
+      --ink: #14213d;
+      --muted: #5b6472;
+      --line: #d8dee8;
+      --panel: #ffffff;
+      --soft: #f5f7fb;
+      --teal: #0f766e;
+      --blue: #2563eb;
+      --amber: #b45309;
+      --red: #b91c1c;
+      --green: #15803d;
+      --shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: Tahoma, Arial, sans-serif;
+      background: #eef2f7;
+      letter-spacing: 0;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      color: var(--ink);
+      cursor: pointer;
+      min-height: 38px;
+      padding: 8px 12px;
+    }
+
+    button:hover { border-color: #94a3b8; }
+    button:disabled { cursor: wait; opacity: 0.6; }
+
+    .primary {
+      background: var(--teal);
+      border-color: var(--teal);
+      color: #fff;
+    }
+
+    .danger {
+      background: #fff5f5;
+      color: var(--red);
+      border-color: #fecaca;
+    }
+
+    .app {
+      min-height: 100vh;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      color: #0f2f3f;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(120px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .kpi,
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      padding: 14px;
+      min-height: 92px;
+    }
+
+    .kpi span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+
+    .kpi strong {
+      display: block;
+      font-size: 22px;
+      line-height: 1.2;
+      overflow-wrap: anywhere;
+    }
+
+    .filters {
+      display: grid;
+      grid-template-columns: minmax(220px, 1.6fr) repeat(5, minmax(130px, 1fr)) auto;
+      gap: 8px;
+      margin-bottom: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 9px 10px;
+      background: #fff;
+      color: var(--ink);
+      min-height: 38px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 88px;
+    }
+
+    .charts {
+      display: grid;
+      grid-template-columns: minmax(260px, 0.8fr) minmax(340px, 1fr) minmax(340px, 1fr);
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .panel {
+      padding: 14px;
+      min-width: 0;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    .bar-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 190px) 1fr auto;
+      gap: 8px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+
+    .bar-track {
+      height: 10px;
+      background: #e8edf5;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--blue);
+      border-radius: 999px;
+    }
+
+    .bar-fill.done { background: var(--green); }
+    .bar-fill.active { background: var(--amber); }
+    .bar-fill.wait { background: var(--blue); }
+    .bar-fill.cancel { background: var(--red); }
+
+    .table-wrap {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .table-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-head strong { font-size: 15px; }
+
+    .scroll {
+      max-height: 440px;
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 1240px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border-bottom: 1px solid #edf1f6;
+      padding: 9px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8fafc;
+      color: #334155;
+      font-weight: 700;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    td.money {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .project-name {
+      min-width: 280px;
+      max-width: 460px;
+      line-height: 1.45;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      border-radius: 999px;
+      padding: 4px 10px;
+      font-size: 12px;
+      white-space: nowrap;
+      border: 1px solid transparent;
+    }
+
+    .status-done { background: #ecfdf5; color: #166534; border-color: #bbf7d0; }
+    .status-active { background: #fffbeb; color: #92400e; border-color: #fde68a; }
+    .status-wait { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .status-cancel { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+
+    .completion {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .completion.ready { color: var(--green); }
+    .completion.warn { color: var(--amber); }
+    .completion.low { color: var(--red); }
+
+    .row-actions {
+      display: flex;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .row-actions button {
+      min-height: 32px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      background: rgba(15, 23, 42, 0.45);
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .modal.show { display: block; }
+
+    .modal-panel {
+      width: min(1180px, 100%);
+      margin: 20px auto;
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      box-shadow: 0 24px 70px rgba(15, 23, 42, 0.22);
+    }
+
+    .modal-header,
+    .modal-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--line);
+      border-bottom: 0;
+      justify-content: flex-end;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(220px, 1fr));
+      gap: 12px;
+      padding: 16px;
+    }
+
+    .form-grid label {
+      display: grid;
+      gap: 6px;
+      font-size: 13px;
+      color: #334155;
+    }
+
+    .wide { grid-column: 1 / -1; }
+
+    .section-title {
+      grid-column: 1 / -1;
+      margin-top: 4px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      color: #0f2f3f;
+      font-weight: 700;
+    }
+
+    .guide-panel {
+      display: grid;
+      grid-column: 1 / -1;
+      grid-template-columns: minmax(220px, 1fr) minmax(260px, 1.4fr) auto auto;
+      gap: 8px;
+      align-items: start;
+      border: 1px solid #c7d2fe;
+      border-radius: 8px;
+      padding: 10px;
+      background: #f8fafc;
+    }
+
+    .guide-checklist {
+      grid-column: 1 / -1;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(140px, 1fr));
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .guide-checklist span {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 7px 8px;
+      background: #fff;
+      color: #334155;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .toast {
+      position: fixed;
+      right: 16px;
+      bottom: 16px;
+      z-index: 30;
+      display: none;
+      max-width: 420px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      color: #fff;
+      background: #0f766e;
+      box-shadow: var(--shadow);
+    }
+
+    .toast.show { display: block; }
+    .toast.error { background: #b91c1c; }
+
+    #printArea { display: none; }
+
+    .empty {
+      padding: 26px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    @media (max-width: 980px) {
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .actions { justify-content: flex-start; }
+      .kpis { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+      .filters { grid-template-columns: 1fr 1fr; }
+      .filters button { width: 100%; }
+      .charts { grid-template-columns: 1fr; }
+      .guide-panel { grid-template-columns: 1fr 1fr; }
+      .guide-checklist { grid-template-columns: repeat(2, minmax(140px, 1fr)); }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 10px; }
+      h1 { font-size: 20px; }
+      .kpis, .filters, .form-grid { grid-template-columns: 1fr; }
+      .guide-panel, .guide-checklist { grid-template-columns: 1fr; }
+      .bar-row { grid-template-columns: 1fr; }
+      .modal { padding: 8px; }
+      .modal-panel { margin: 8px auto; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        display: block;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .print-page {
+        padding: 18mm;
+        color: #111827;
+        font-size: 14px;
+      }
+      .print-title {
+        text-align: center;
+        font-size: 22px;
+        font-weight: 700;
+        margin-bottom: 4mm;
+      }
+      .print-subtitle {
+        text-align: center;
+        color: #475569;
+        margin-bottom: 8mm;
+      }
+      .print-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 0;
+      }
+      .print-table th,
+      .print-table td {
+        border: 1px solid #111827;
+        padding: 8px;
+        position: static;
+        background: #fff;
+        color: #111827;
+      }
+      .print-table th {
+        width: 28%;
+        text-align: left;
+      }
+      .print-block {
+        break-inside: avoid;
+        margin-top: 6mm;
+      }
+      .print-block h3 {
+        margin: 0 0 2mm;
+        font-size: 16px;
+      }
+      .print-block div {
+        min-height: 16mm;
+        border: 1px solid #111827;
+        padding: 8px;
+        white-space: pre-wrap;
+      }
+      .signature-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 22mm;
+        margin-top: 24mm;
+        text-align: center;
+      }
+      .signature-line {
+        border-top: 1px dotted #111827;
+        padding-top: 6px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="topbar">
+      <div>
+        <h1>ระบบติดตามโครงการกองทุนตำบล</h1>
+        <div class="subtle" id="updatedAt">กำลังโหลดข้อมูล...</div>
+      </div>
+      <div class="actions">
+        <button type="button" id="importBtn">นำเข้าจากชีต</button>
+        <button type="button" id="syncBtn">ซิงก์กลับชีต</button>
+        <button type="button" id="refreshBtn">รีเฟรช</button>
+        <button type="button" class="primary" id="addBtn">เพิ่มโครงการ</button>
+      </div>
+    </section>
+
+    <section class="kpis">
+      <div class="kpi"><span>จำนวนโครงการ</span><strong id="kpiTotal">0</strong></div>
+      <div class="kpi"><span>งบประมาณทั้งหมด</span><strong id="kpiBudget">0.00</strong></div>
+      <div class="kpi"><span>ใช้แล้ว</span><strong id="kpiUsed">0.00</strong></div>
+      <div class="kpi"><span>คงเหลือ</span><strong id="kpiRemain">0.00</strong></div>
+      <div class="kpi"><span>ร้อยละการใช้งบ</span><strong id="kpiPercent">0%</strong></div>
+      <div class="kpi"><span>คำขอพร้อมยื่น</span><strong id="kpiProposalReady">0</strong></div>
+      <div class="kpi"><span>ความครบถ้วนเฉลี่ย</span><strong id="kpiAvgCompletion">0%</strong></div>
+    </section>
+
+    <section class="filters">
+      <input type="search" id="searchInput" placeholder="ค้นหาโครงการ สถานบริการ ประเภทกองทุน">
+      <select id="fundLevelFilter"><option value="">ทุกระดับกองทุน</option></select>
+      <select id="tambonFilter"><option value="">ทุกกองทุนตำบล</option></select>
+      <select id="statusFilter"><option value="">ทุกสถานะ</option></select>
+      <select id="serviceFilter"><option value="">ทุกสถานบริการ</option></select>
+      <select id="targetGroupFilter"><option value="">ทุกกลุ่มเป้าหมาย</option></select>
+      <button type="button" id="clearFilterBtn">ล้างตัวกรอง</button>
+    </section>
+
+    <section class="charts">
+      <div class="panel">
+        <h2>สถานะโครงการ</h2>
+        <div id="statusChart"></div>
+      </div>
+      <div class="panel">
+        <h2>งบประมาณรายตำบล</h2>
+        <div id="tambonChart"></div>
+      </div>
+      <div class="panel">
+        <h2>กลุ่มเป้าหมาย</h2>
+        <div id="targetChart"></div>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <div class="table-head">
+        <strong id="tableCount">0 รายการ</strong>
+        <span class="subtle">คลิกหัวคอลัมน์เพื่อเรียงข้อมูล</span>
+      </div>
+      <div class="scroll">
+        <table>
+          <thead>
+            <tr>
+              <th data-sort="no">ลำดับ</th>
+              <th data-sort="projectName">โครงการ</th>
+              <th data-sort="fundLevel">ระดับกองทุน</th>
+              <th data-sort="tambon">กองทุนตำบล</th>
+              <th data-sort="service">สถานบริการ</th>
+              <th data-sort="targetGroups">กลุ่มเป้าหมาย</th>
+              <th data-sort="budget">งบทั้งหมด</th>
+              <th data-sort="used">ใช้แล้ว</th>
+              <th data-sort="remaining">คงเหลือ</th>
+              <th data-sort="proposalCompletion">คำขอ</th>
+              <th data-sort="status">สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody id="projectRows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="projectModal" aria-hidden="true">
+    <div class="modal-panel">
+      <form id="projectForm">
+        <div class="modal-header">
+          <h2 id="modalTitle">เพิ่มโครงการ</h2>
+          <button type="button" id="closeModalBtn">ปิด</button>
+        </div>
+        <div class="form-grid">
+          <input type="hidden" name="id">
+          <label class="wide">
+            ชื่อโครงการ
+            <textarea name="projectName" required></textarea>
+          </label>
+          <label>
+            กองทุนตำบล
+            <input name="tambon" list="tambonList" required>
+          </label>
+          <label>
+            สถานบริการ
+            <input name="service" list="serviceList">
+          </label>
+          <label>
+            สังกัด
+            <input name="affiliation" list="affiliationList">
+          </label>
+          <label>
+            ประเภทกองทุน
+            <input name="fundType" list="fundTypeList">
+          </label>
+          <label>
+            งบประมาณทั้งหมด
+            <input name="budget" type="number" step="0.01" min="0" required>
+          </label>
+          <label>
+            ใช้แล้ว
+            <input name="used" type="number" step="0.01" min="0" required>
+          </label>
+          <label>
+            สถานะ
+            <select name="status" id="statusInput" required></select>
+          </label>
+          <label>
+            ปีงบประมาณ
+            <input name="fiscalYear" type="number" min="2500" max="2700">
+          </label>
+          <div class="section-title">รายละเอียดคำขอสนับสนุน</div>
+          <div class="guide-panel">
+            <select id="guideGroup"></select>
+            <select id="guideActivity"></select>
+            <button type="button" id="insertGuideBtn">เติมกิจกรรม</button>
+            <button type="button" id="buildDraftBtn">สร้างโครงร่าง</button>
+            <div class="guide-checklist" id="guideChecklist"></div>
+          </div>
+          <label>
+            ระดับกองทุน
+            <select name="fundLevel" id="fundLevelInput" required></select>
+          </label>
+          <label>
+            ลักษณะโครงการ
+            <select name="proposalType" id="proposalTypeInput"></select>
+          </label>
+          <label class="wide">
+            แผนงาน / ประเด็นสุขภาพ / ประเด็นจังหวัดที่สอดคล้อง
+            <textarea name="planAlignment"></textarea>
+          </label>
+          <label class="wide">
+            ประเภทการสนับสนุน
+            <select name="supportCategory" id="supportCategoryInput"></select>
+          </label>
+          <label>
+            หน่วยงาน / องค์กร / กลุ่มประชาชน
+            <input name="ownerName">
+          </label>
+          <label>
+            ประเภทผู้ขอรับทุน
+            <select name="ownerType" id="ownerTypeInput"></select>
+          </label>
+          <label class="wide">
+            ผู้รับผิดชอบ / ทีม 5 คน / เบอร์ติดต่อ
+            <textarea name="responsiblePeople"></textarea>
+          </label>
+          <label>
+            กลุ่มเป้าหมายหลัก
+            <input name="targetGroups" list="targetGroupList">
+          </label>
+          <label>
+            จำนวนกลุ่มเป้าหมาย (คน)
+            <input name="targetCount" type="number" min="0" step="1">
+          </label>
+          <label>
+            วันที่เริ่มดำเนินการ
+            <input name="startDate" type="date">
+          </label>
+          <label>
+            วันที่สิ้นสุด
+            <input name="endDate" type="date">
+          </label>
+          <label class="wide">
+            กิจกรรมหลักตามกลุ่มเป้าหมาย
+            <textarea name="mainActivities" list="mainActivityList"></textarea>
+          </label>
+          <label class="wide">
+            หลักการและเหตุผล / สถานการณ์ปัญหา
+            <textarea name="principles"></textarea>
+          </label>
+          <label class="wide">
+            วัตถุประสงค์
+            <textarea name="objectives"></textarea>
+          </label>
+          <label class="wide">
+            ตัวชี้วัด / เป้าหมาย 1 ปี
+            <textarea name="indicators"></textarea>
+          </label>
+          <label class="wide">
+            สถานที่ / พื้นที่ดำเนินการ
+            <textarea name="operationArea"></textarea>
+          </label>
+          <label class="wide">
+            วิธีดำเนินการ
+            <textarea name="implementationMethods"></textarea>
+          </label>
+          <label class="wide">
+            แผนกิจกรรม / รายละเอียดกิจกรรม
+            <textarea name="activityPlan"></textarea>
+          </label>
+          <label class="wide">
+            รายละเอียดงบประมาณ
+            <textarea name="budgetDetails"></textarea>
+          </label>
+          <label class="wide">
+            ผลที่คาดว่าจะได้รับ
+            <textarea name="expectedResults"></textarea>
+          </label>
+          <label class="wide">
+            แผนติดตามและประเมินผล
+            <textarea name="evaluationPlan"></textarea>
+          </label>
+          <label>
+            กำหนดส่งรายงานผล
+            <input name="reportDueDate" type="date">
+          </label>
+          <label>
+            ผลการพิจารณา
+            <input name="approvalResult" list="approvalResultList">
+          </label>
+          <label>
+            งบประมาณที่อนุมัติ
+            <input name="approvedBudget" type="number" step="0.01" min="0">
+          </label>
+          <label class="wide">
+            เหตุผล / หมายเหตุการพิจารณา
+            <textarea name="approvalNotes"></textarea>
+          </label>
+          <label class="wide">
+            ร่างแบบเสนอ
+            <textarea name="proposalText"></textarea>
+          </label>
+          <label class="wide">
+            หมายเหตุ
+            <textarea name="notes"></textarea>
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancelBtn">ยกเลิก</button>
+          <button type="submit" class="primary">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <datalist id="tambonList"></datalist>
+  <datalist id="serviceList"></datalist>
+  <datalist id="affiliationList"></datalist>
+  <datalist id="fundTypeList"></datalist>
+  <datalist id="targetGroupList"></datalist>
+  <datalist id="mainActivityList"></datalist>
+  <datalist id="approvalResultList">
+    <option value="รอพิจารณา"></option>
+    <option value="อนุมัติ"></option>
+    <option value="ไม่อนุมัติ"></option>
+    <option value="ให้แก้ไขเพิ่มเติม"></option>
+  </datalist>
+  <div class="toast" id="toast"></div>
+  <div id="printArea"></div>
+
+  <script>
+    const DEFAULT_PROPOSAL_GUIDES = {
+      fundLevels: ['กองทุนตำบล', 'กองทุนจังหวัด'],
+      proposalTypes: ['ต้องดำเนินการ (ต้องทำ)', 'ควรดำเนินการ (ควรทำ)', 'ประเด็นจังหวัด / บูรณาการพื้นที่'],
+      supportCategories: [
+        'ข้อ 10 (1) หน่วยบริการ / สถานบริการ / หน่วยงานสาธารณสุข',
+        'ข้อ 10 (2) หน่วยงานอื่น / องค์กร / กลุ่มประชาชน',
+        'ข้อ 10 (3) ศูนย์เด็กเล็ก / ศูนย์ผู้สูงอายุ / ศูนย์คนพิการ',
+        'ข้อ 10 (4) บริหารหรือพัฒนากองทุน',
+        'ข้อ 10 (5) โรคระบาดหรือภัยพิบัติในพื้นที่',
+      ],
+      ownerTypes: [
+        'หน่วยบริการหรือสถานบริการสาธารณสุข',
+        'หน่วยงานสาธารณสุข',
+        'หน่วยงานอื่น',
+        'องค์กรหรือกลุ่มประชาชน',
+        'ศูนย์พัฒนาเด็กเล็ก / ศูนย์ผู้สูงอายุ / ศูนย์คนพิการ',
+        'องค์กรปกครองส่วนท้องถิ่น (อปท.)',
+      ],
+      targetGroups: [
+        'กลุ่มหญิงตั้งครรภ์และหญิงหลังคลอด',
+        'กลุ่มเด็กเล็กและเด็กก่อนวัยเรียน',
+        'กลุ่มเด็กวัยเรียนและเยาวชน',
+        'กลุ่มวัยทำงาน',
+        'กลุ่มผู้สูงอายุ',
+        'กลุ่มผู้ป่วยโรคเรื้อรัง',
+        'กลุ่มคนพิการและทุพพลภาพ',
+        'กลุ่มประชาชนทั่วไปที่มีภาวะเสี่ยง',
+        'การบริหารหรือพัฒนากองทุน',
+        'กลุ่มอื่นๆ',
+      ],
+      activityGroups: [],
+      checklist: [
+        'สอดคล้องวัตถุประสงค์กองทุน',
+        'ตอบปัญหาและความจำเป็นของพื้นที่',
+        'ไม่ซ้ำซ้อนกับงบประมาณอื่น',
+        'ระบุกลุ่มเป้าหมายและจำนวนชัดเจน',
+        'กิจกรรมสัมพันธ์กับวัตถุประสงค์',
+        'งบประมาณสัมพันธ์กับกิจกรรม',
+        'มีตัวชี้วัดและผลที่คาดว่าจะได้รับ',
+        'กำหนดรายงานผลหลังดำเนินงาน',
+      ],
+    };
+
+    function createEmptyLists() {
+      return {
+        tambons: [],
+        services: [],
+        affiliations: [],
+        fundTypes: [],
+        statuses: [],
+        fundLevels: [],
+        proposalTypes: [],
+        supportCategories: [],
+        ownerTypes: [],
+        targetGroups: [],
+        mainActivities: [],
+      };
+    }
+
+    const state = {
+      projects: [],
+      metrics: null,
+      lists: createEmptyLists(),
+      proposalGuides: DEFAULT_PROPOSAL_GUIDES,
+      sortKey: 'tambon',
+      sortDir: 1,
+      busy: false,
+    };
+
+    const money = new Intl.NumberFormat('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const integer = new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      bindEvents();
+      loadData();
+    });
+
+    function bindEvents() {
+      document.getElementById('addBtn').addEventListener('click', () => openForm());
+      document.getElementById('refreshBtn').addEventListener('click', loadData);
+      document.getElementById('syncBtn').addEventListener('click', syncLegacy);
+      document.getElementById('importBtn').addEventListener('click', importLegacy);
+      document.getElementById('closeModalBtn').addEventListener('click', closeForm);
+      document.getElementById('cancelBtn').addEventListener('click', closeForm);
+      document.getElementById('projectForm').addEventListener('submit', saveProject);
+      document.getElementById('clearFilterBtn').addEventListener('click', clearFilters);
+      document.getElementById('projectRows').addEventListener('click', handleRowAction);
+      document.getElementById('guideGroup').addEventListener('change', renderGuideActivities);
+      document.getElementById('insertGuideBtn').addEventListener('click', insertGuideActivity);
+      document.getElementById('buildDraftBtn').addEventListener('click', buildDraftProposal);
+
+      ['searchInput', 'fundLevelFilter', 'tambonFilter', 'statusFilter', 'serviceFilter', 'targetGroupFilter'].forEach((id) => {
+        document.getElementById(id).addEventListener('input', render);
+      });
+
+      document.querySelectorAll('th[data-sort]').forEach((th) => {
+        th.addEventListener('click', () => {
+          const key = th.dataset.sort;
+          if (state.sortKey === key) state.sortDir *= -1;
+          else {
+            state.sortKey = key;
+            state.sortDir = 1;
+          }
+          render();
+        });
+      });
+    }
+
+    function runServer(functionName, ...args) {
+      return new Promise((resolve, reject) => {
+        if (!window.google || !google.script || !google.script.run) {
+          reject(new Error('กรุณาเปิดผ่าน Google Apps Script หรือเมนู Dashboard ใน Google Sheets'));
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler((error) => reject(new Error(error && error.message ? error.message : error)))
+          [functionName](...args);
+      });
+    }
+
+    async function loadData() {
+      setBusy(true);
+      try {
+        applyBootstrap(await runServer('apiBootstrap'));
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function importLegacy() {
+      if (!confirm('นำเข้าจากชีตรายตำบลเดิมและแทนที่ข้อมูลใน Projects ใช่หรือไม่')) return;
+      setBusy(true);
+      try {
+        const data = await runServer('apiImportLegacy', { replace: true });
+        applyBootstrap(data);
+        showToast(data.message + ' (' + data.importedCount + ' โครงการ)');
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function syncLegacy() {
+      setBusy(true);
+      try {
+        const data = await runServer('apiSyncLegacySheets');
+        applyBootstrap(data);
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function applyBootstrap(data) {
+      state.proposalGuides = normalizeProposalGuides(data.proposalGuides);
+      state.projects = (data.projects || []).map((project) => ({
+        ...project,
+        proposalCompletion: getProposalCompletion(project),
+      }));
+      state.metrics = normalizeMetrics(data.metrics, state.projects);
+      state.lists = mergeLookupLists(data.lists, state.proposalGuides, state.projects);
+      document.getElementById('updatedAt').textContent = 'อัปเดตล่าสุด ' + formatDateTime(data.updatedAt);
+      renderLists();
+      renderGuideControls();
+      render();
+    }
+
+    function renderLists() {
+      fillSelect('fundLevelFilter', state.lists.fundLevels, 'ทุกระดับกองทุน');
+      fillSelect('tambonFilter', state.lists.tambons, 'ทุกกองทุนตำบล');
+      fillSelect('statusFilter', state.lists.statuses, 'ทุกสถานะ');
+      fillSelect('serviceFilter', state.lists.services, 'ทุกสถานบริการ');
+      fillSelect('targetGroupFilter', state.lists.targetGroups, 'ทุกกลุ่มเป้าหมาย');
+      fillDatalist('tambonList', state.lists.tambons);
+      fillDatalist('serviceList', state.lists.services);
+      fillDatalist('affiliationList', state.lists.affiliations);
+      fillDatalist('fundTypeList', state.lists.fundTypes);
+      fillDatalist('targetGroupList', state.lists.targetGroups);
+      fillDatalist('mainActivityList', state.lists.mainActivities);
+      fillSelect('statusInput', state.lists.statuses, '');
+      fillSelect('fundLevelInput', state.lists.fundLevels, '');
+      fillSelect('proposalTypeInput', state.lists.proposalTypes, '');
+      fillSelect('supportCategoryInput', state.lists.supportCategories, '');
+      fillSelect('ownerTypeInput', state.lists.ownerTypes, '');
+    }
+
+    function fillSelect(id, values, firstLabel) {
+      const select = document.getElementById(id);
+      const current = select.value;
+      select.innerHTML = firstLabel ? '<option value="">' + escapeHtml(firstLabel) + '</option>' : '';
+      (values || []).forEach((value) => {
+        select.insertAdjacentHTML('beforeend', '<option value="' + escapeHtml(value) + '">' + escapeHtml(value) + '</option>');
+      });
+      if ([...select.options].some((option) => option.value === current)) select.value = current;
+    }
+
+    function fillDatalist(id, values) {
+      document.getElementById(id).innerHTML = (values || [])
+        .map((value) => '<option value="' + escapeHtml(value) + '"></option>')
+        .join('');
+    }
+
+    function render() {
+      renderKpis();
+      renderCharts();
+      renderTable(filteredProjects());
+    }
+
+    function renderKpis() {
+      const m = state.metrics || { totalProjects: 0, budget: 0, used: 0, remaining: 0, usedPercent: 0, proposalReady: 0, averageProposalCompletion: 0 };
+      document.getElementById('kpiTotal').textContent = integer.format(m.totalProjects || 0);
+      document.getElementById('kpiBudget').textContent = money.format(m.budget || 0);
+      document.getElementById('kpiUsed').textContent = money.format(m.used || 0);
+      document.getElementById('kpiRemain').textContent = money.format(m.remaining || 0);
+      document.getElementById('kpiPercent').textContent = money.format(m.usedPercent || 0) + '%';
+      document.getElementById('kpiProposalReady').textContent = integer.format(m.proposalReady || 0);
+      document.getElementById('kpiAvgCompletion').textContent = money.format(m.averageProposalCompletion || 0) + '%';
+    }
+
+    function renderCharts() {
+      const metrics = calculateClientMetrics(filteredProjects());
+      renderBarChart('statusChart', metrics.byStatus, 'count', statusClassForBar);
+      renderBarChart('tambonChart', metrics.byTambon, 'budget', () => 'budget');
+      renderBarChart('targetChart', metrics.byTargetGroup, 'count', () => 'target');
+    }
+
+    function renderBarChart(targetId, rows, field, classResolver) {
+      const target = document.getElementById(targetId);
+      if (!rows.length) {
+        target.innerHTML = '<div class="empty">ไม่มีข้อมูล</div>';
+        return;
+      }
+
+      const max = Math.max(...rows.map((row) => Number(row[field]) || 0), 1);
+      target.innerHTML = rows.map((row) => {
+        const value = Number(row[field]) || 0;
+        const width = Math.max(2, (value / max) * 100);
+        const label = field === 'budget' ? money.format(value) : integer.format(value);
+        return '<div class="bar-row">' +
+          '<span>' + escapeHtml(row.name) + '</span>' +
+          '<div class="bar-track"><div class="bar-fill ' + classResolver(row.name) + '" style="width:' + width + '%"></div></div>' +
+          '<strong>' + label + '</strong>' +
+        '</div>';
+      }).join('');
+    }
+
+    function filteredProjects() {
+      const query = document.getElementById('searchInput').value.trim().toLocaleLowerCase('th');
+      const tambon = document.getElementById('tambonFilter').value;
+      const status = document.getElementById('statusFilter').value;
+      const service = document.getElementById('serviceFilter').value;
+      const fundLevel = document.getElementById('fundLevelFilter').value;
+      const targetGroup = document.getElementById('targetGroupFilter').value;
+
+      return state.projects
+        .filter((project) => {
+          const projectTargets = splitMultiValue(project.targetGroups);
+          const haystack = [
+            project.projectName,
+            project.tambon,
+            project.service,
+            project.affiliation,
+            project.fundType,
+            project.status,
+            project.fundLevel,
+            project.proposalType,
+            project.planAlignment,
+            project.supportCategory,
+            project.ownerName,
+            project.ownerType,
+            project.targetGroups,
+            project.mainActivities,
+            project.principles,
+            project.objectives,
+            project.indicators,
+          ]
+            .join(' ')
+            .toLocaleLowerCase('th');
+          return (!query || haystack.includes(query)) &&
+            (!fundLevel || project.fundLevel === fundLevel) &&
+            (!tambon || project.tambon === tambon) &&
+            (!status || project.status === status) &&
+            (!service || project.service === service) &&
+            (!targetGroup || projectTargets.includes(targetGroup) || String(project.targetGroups || '').includes(targetGroup));
+        })
+        .sort((a, b) => compareValue(a[state.sortKey], b[state.sortKey]) * state.sortDir);
+    }
+
+    function renderTable(rows) {
+      document.getElementById('tableCount').textContent = integer.format(rows.length) + ' รายการ';
+      const tbody = document.getElementById('projectRows');
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="12" class="empty">ไม่มีข้อมูลตามตัวกรอง</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = rows.map((project) => {
+        const completion = getProposalCompletion(project);
+        return '<tr>' +
+            '<td>' + escapeHtml(project.no || '') + '</td>' +
+            '<td class="project-name">' + escapeHtml(project.projectName) + '</td>' +
+            '<td>' + escapeHtml(project.fundLevel || '-') + '</td>' +
+            '<td>' + escapeHtml(project.tambon) + '</td>' +
+            '<td>' + escapeHtml(project.service || '-') + '</td>' +
+            '<td>' + escapeHtml(compactList(project.targetGroups) || '-') + '</td>' +
+            '<td class="money">' + money.format(project.budget || 0) + '</td>' +
+            '<td class="money">' + money.format(project.used || 0) + '</td>' +
+            '<td class="money">' + money.format(project.remaining || 0) + '</td>' +
+            '<td><span class="completion ' + completionClass(completion) + '">' + completion + '%</span></td>' +
+            '<td><span class="pill ' + statusClass(project.status) + '">' + escapeHtml(project.status) + '</span></td>' +
+            '<td><div class="row-actions">' +
+              '<button type="button" data-action="print" data-id="' + escapeHtml(project.id) + '">แบบเสนอ</button>' +
+              '<button type="button" data-action="edit" data-id="' + escapeHtml(project.id) + '">แก้ไข</button>' +
+              '<button type="button" class="danger" data-action="delete" data-id="' + escapeHtml(project.id) + '">ลบ</button>' +
+            '</div></td>' +
+          '</tr>';
+      }).join('');
+    }
+
+    function handleRowAction(event) {
+      const button = event.target.closest('button[data-action]');
+      if (!button) return;
+      const project = state.projects.find((item) => item.id === button.dataset.id);
+      if (!project) return;
+
+      if (button.dataset.action === 'edit') openForm(project);
+      if (button.dataset.action === 'delete') deleteProject(project);
+      if (button.dataset.action === 'print') printProject(project.id);
+    }
+
+    function openForm(project) {
+      const form = document.getElementById('projectForm');
+      form.reset();
+      document.getElementById('modalTitle').textContent = project ? 'แก้ไขโครงการ' : 'เพิ่มโครงการ';
+      form.elements.id.value = project ? project.id : '';
+      form.elements.projectName.value = project ? project.projectName : '';
+      form.elements.tambon.value = project ? project.tambon : '';
+      form.elements.service.value = project ? project.service : '';
+      form.elements.affiliation.value = project ? project.affiliation : '';
+      form.elements.fundType.value = project ? project.fundType : '';
+      form.elements.budget.value = project ? project.budget : 0;
+      form.elements.used.value = project ? project.used : 0;
+      form.elements.status.value = project ? project.status : (state.lists.statuses[0] || 'ยังไม่ได้ดำเนินการ');
+      form.elements.fiscalYear.value = project ? project.fiscalYear : 2569;
+      form.elements.fundLevel.value = project ? (project.fundLevel || state.lists.fundLevels[0] || 'กองทุนตำบล') : (state.lists.fundLevels[0] || 'กองทุนตำบล');
+      form.elements.proposalType.value = project ? (project.proposalType || '') : '';
+      form.elements.planAlignment.value = project ? (project.planAlignment || '') : '';
+      form.elements.supportCategory.value = project ? (project.supportCategory || '') : '';
+      form.elements.ownerName.value = project ? (project.ownerName || '') : (form.elements.service.value || '');
+      form.elements.ownerType.value = project ? (project.ownerType || '') : '';
+      form.elements.responsiblePeople.value = project ? (project.responsiblePeople || '') : '';
+      form.elements.targetGroups.value = project ? (project.targetGroups || '') : '';
+      form.elements.targetCount.value = project ? (project.targetCount || '') : '';
+      form.elements.startDate.value = project ? (project.startDate || '') : '';
+      form.elements.endDate.value = project ? (project.endDate || '') : '';
+      form.elements.mainActivities.value = project ? (project.mainActivities || '') : '';
+      form.elements.principles.value = project ? (project.principles || '') : '';
+      form.elements.objectives.value = project ? (project.objectives || '') : '';
+      form.elements.indicators.value = project ? (project.indicators || '') : '';
+      form.elements.operationArea.value = project ? (project.operationArea || '') : 'พื้นที่รับผิดชอบของกองทุนฯ';
+      form.elements.implementationMethods.value = project ? (project.implementationMethods || '') : '';
+      form.elements.activityPlan.value = project ? (project.activityPlan || '') : '';
+      form.elements.budgetDetails.value = project ? (project.budgetDetails || '') : '';
+      form.elements.expectedResults.value = project ? (project.expectedResults || '') : '';
+      form.elements.evaluationPlan.value = project ? (project.evaluationPlan || '') : '';
+      form.elements.reportDueDate.value = project ? (project.reportDueDate || '') : '';
+      form.elements.approvalResult.value = project ? (project.approvalResult || '') : 'รอพิจารณา';
+      form.elements.approvedBudget.value = project ? (project.approvedBudget || '') : '';
+      form.elements.approvalNotes.value = project ? (project.approvalNotes || '') : '';
+      form.elements.proposalText.value = project ? (project.proposalText || buildProposalText(project)) : '';
+      form.elements.notes.value = project ? project.notes : '';
+      renderGuideControls(form.elements.targetGroups.value);
+      document.getElementById('projectModal').classList.add('show');
+    }
+
+    function closeForm() {
+      document.getElementById('projectModal').classList.remove('show');
+    }
+
+    async function saveProject(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const payload = readFormPayload(form);
+      if (!payload.proposalText) payload.proposalText = buildProposalText(payload);
+
+      setBusy(true);
+      try {
+        const data = await runServer('apiSaveProject', payload);
+        applyBootstrap(data);
+        closeForm();
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function deleteProject(project) {
+      if (!confirm('ลบโครงการ "' + project.projectName + '" ใช่หรือไม่')) return;
+      setBusy(true);
+      try {
+        const data = await runServer('apiDeleteProject', project.id);
+        applyBootstrap(data);
+        showToast(data.message);
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    async function printProject(id) {
+      setBusy(true);
+      try {
+        const result = await runServer('apiGetProjectForPrint', id);
+        buildPrintArea(result.project, result.generatedAt);
+        window.print();
+      } catch (error) {
+        showToast(error.message, true);
+      } finally {
+        setBusy(false);
+      }
+    }
+
+    function buildPrintArea(project, generatedAt) {
+      const completion = getProposalCompletion(project);
+      document.getElementById('printArea').innerHTML =
+        '<section class="print-page">' +
+          '<div class="print-title">แบบเสนอแผนงาน / โครงการ / กิจกรรม</div>' +
+          '<div class="print-subtitle">' + escapeHtml(project.fundLevel || 'กองทุนตำบล') + ' | พิมพ์วันที่ ' + escapeHtml(generatedAt) + '</div>' +
+          '<table class="print-table">' +
+            printRow('ชื่อโครงการ', project.projectName) +
+            printRow('หน่วยงาน / องค์กร / กลุ่มประชาชน', project.ownerName || project.service || '-') +
+            printRow('ประเภทผู้ขอรับทุน', project.ownerType || '-') +
+            printRow('กองทุนตำบล', project.tambon) +
+            printRow('สถานบริการ', project.service || '-') +
+            printRow('สังกัด', project.affiliation || '-') +
+            printRow('ระดับกองทุน', project.fundLevel || '-') +
+            printRow('ลักษณะโครงการ', project.proposalType || '-') +
+            printRow('แผนงาน / ประเด็นสุขภาพ / ประเด็นจังหวัดที่สอดคล้อง', project.planAlignment || '-') +
+            printRow('ประเภทการสนับสนุน', project.supportCategory || project.fundType || '-') +
+            printRow('กลุ่มเป้าหมาย / จำนวน', (project.targetGroups || '-') + ' / ' + (project.targetCount || '-') + ' คน') +
+            printRow('ระยะเวลาดำเนินการ', formatDateRange(project)) +
+            printRow('ปีงบประมาณ', project.fiscalYear || '-') +
+            printRow('งบประมาณทั้งหมด', money.format(project.budget || 0) + ' บาท') +
+            printRow('ความครบถ้วนคำขอ', completion + '%') +
+          '</table>' +
+          printBlock('1. หลักการและเหตุผล / สถานการณ์ปัญหา', project.principles) +
+          printBlock('2. วัตถุประสงค์', project.objectives) +
+          printBlock('3. ตัวชี้วัด / เป้าหมาย 1 ปี', project.indicators) +
+          printBlock('4. วิธีดำเนินการ', project.implementationMethods) +
+          printBlock('5. แผนกิจกรรม / รายละเอียดกิจกรรม', project.activityPlan || project.mainActivities) +
+          printBlock('6. รายละเอียดงบประมาณ', project.budgetDetails) +
+          printBlock('7. ผลที่คาดว่าจะได้รับ', project.expectedResults) +
+          printBlock('8. แผนติดตามและประเมินผล', project.evaluationPlan) +
+          printBlock('9. สรุปประเภทโครงการตามระบบกองทุน', buildProposalText(project)) +
+          printBlock('10. ผลการพิจารณา / หมายเหตุ', [
+            'ผลการพิจารณา: ' + (project.approvalResult || 'รอพิจารณา'),
+            'งบประมาณที่อนุมัติ: ' + money.format(project.approvedBudget || 0) + ' บาท',
+            'กำหนดส่งรายงานผล: ' + (formatDateValue(project.reportDueDate) || '-'),
+            project.approvalNotes || '',
+          ].filter(Boolean).join('\n')) +
+          '<div class="signature-grid">' +
+            '<div><div class="signature-line">ผู้เสนอแผนงาน / โครงการ / กิจกรรม</div></div>' +
+            '<div><div class="signature-line">ผู้เห็นชอบ / ผู้อนุมัติ</div></div>' +
+          '</div>' +
+        '</section>';
+    }
+
+    function printRow(label, value) {
+      return '<tr><th>' + escapeHtml(label) + '</th><td>' + escapeHtml(value) + '</td></tr>';
+    }
+
+    function printBlock(title, value) {
+      return '<div class="print-block"><h3>' + escapeHtml(title) + '</h3><div>' + escapeHtml(value || '-') + '</div></div>';
+    }
+
+    function clearFilters() {
+      document.getElementById('searchInput').value = '';
+      document.getElementById('fundLevelFilter').value = '';
+      document.getElementById('tambonFilter').value = '';
+      document.getElementById('statusFilter').value = '';
+      document.getElementById('serviceFilter').value = '';
+      document.getElementById('targetGroupFilter').value = '';
+      render();
+    }
+
+    function normalizeProposalGuides(guides) {
+      const source = guides || {};
+      const activityGroups = Array.isArray(source.activityGroups) && source.activityGroups.length
+        ? source.activityGroups
+        : DEFAULT_PROPOSAL_GUIDES.activityGroups;
+      return {
+        fundLevels: uniqueValues([...(source.fundLevels || []), ...DEFAULT_PROPOSAL_GUIDES.fundLevels]),
+        proposalTypes: uniqueValues([...(source.proposalTypes || []), ...DEFAULT_PROPOSAL_GUIDES.proposalTypes]),
+        supportCategories: uniqueValues([...(source.supportCategories || []), ...DEFAULT_PROPOSAL_GUIDES.supportCategories]),
+        ownerTypes: uniqueValues([...(source.ownerTypes || []), ...DEFAULT_PROPOSAL_GUIDES.ownerTypes]),
+        targetGroups: uniqueValues([...(source.targetGroups || []), ...DEFAULT_PROPOSAL_GUIDES.targetGroups]),
+        activityGroups,
+        checklist: uniqueValues([...(source.checklist || []), ...DEFAULT_PROPOSAL_GUIDES.checklist]),
+      };
+    }
+
+    function mergeLookupLists(serverLists, guides, projects) {
+      const lists = createEmptyLists();
+      const incoming = serverLists || {};
+      Object.keys(lists).forEach((key) => {
+        lists[key] = uniqueValues(incoming[key] || []);
+      });
+
+      const guideActivities = (guides.activityGroups || []).flatMap((group) => group.activities || []);
+      lists.fundLevels = uniqueValues([...(guides.fundLevels || []), ...lists.fundLevels]);
+      lists.proposalTypes = uniqueValues([...(guides.proposalTypes || []), ...lists.proposalTypes]);
+      lists.supportCategories = uniqueValues([...(guides.supportCategories || []), ...lists.supportCategories]);
+      lists.ownerTypes = uniqueValues([...(guides.ownerTypes || []), ...lists.ownerTypes]);
+      lists.targetGroups = uniqueValues([...(guides.targetGroups || []), ...lists.targetGroups]);
+      lists.mainActivities = uniqueValues([...guideActivities, ...lists.mainActivities]);
+      if (!lists.statuses.length) {
+        lists.statuses = ['ยังไม่ได้ดำเนินการ', 'ระหว่างดำเนินการ', 'ดำเนินการแล้ว', 'ยกเลิกดำเนินการ'];
+      }
+
+      (projects || []).forEach((project) => {
+        pushUnique(lists.tambons, project.tambon);
+        pushUnique(lists.services, project.service);
+        pushUnique(lists.affiliations, project.affiliation);
+        pushUnique(lists.fundTypes, project.fundType);
+        pushUnique(lists.fundLevels, project.fundLevel);
+        pushUnique(lists.proposalTypes, project.proposalType);
+        pushUnique(lists.supportCategories, project.supportCategory);
+        pushUnique(lists.ownerTypes, project.ownerType);
+        splitMultiValue(project.targetGroups).forEach((value) => pushUnique(lists.targetGroups, value));
+        splitMultiValue(project.mainActivities).forEach((value) => pushUnique(lists.mainActivities, value));
+      });
+
+      return lists;
+    }
+
+    function normalizeMetrics(metrics, projects) {
+      const fallback = buildSummaryMetrics(projects);
+      const source = metrics || {};
+      return {
+        ...fallback,
+        ...source,
+        proposalReady: source.proposalReady == null ? fallback.proposalReady : source.proposalReady,
+        averageProposalCompletion: source.averageProposalCompletion == null ? fallback.averageProposalCompletion : source.averageProposalCompletion,
+      };
+    }
+
+    function buildSummaryMetrics(projects) {
+      const totals = {
+        totalProjects: 0,
+        budget: 0,
+        used: 0,
+        remaining: 0,
+        usedPercent: 0,
+        proposalReady: 0,
+        averageProposalCompletion: 0,
+      };
+
+      (projects || []).forEach((project) => {
+        const budget = Number(project.budget) || 0;
+        const used = Number(project.used) || 0;
+        const completion = getProposalCompletion(project);
+        totals.totalProjects += 1;
+        totals.budget += budget;
+        totals.used += used;
+        totals.remaining += Number(project.remaining) || Math.max(0, budget - used);
+        totals.proposalReady += completion >= 80 ? 1 : 0;
+        totals.averageProposalCompletion += completion;
+      });
+
+      totals.usedPercent = totals.budget > 0 ? (totals.used / totals.budget) * 100 : 0;
+      totals.averageProposalCompletion = totals.totalProjects > 0 ? totals.averageProposalCompletion / totals.totalProjects : 0;
+      return totals;
+    }
+
+    function renderGuideControls(selectedTarget) {
+      const groupSelect = document.getElementById('guideGroup');
+      const groups = state.proposalGuides.activityGroups || [];
+      const preferred = splitMultiValue(selectedTarget)[0] || groupSelect.value;
+      groupSelect.innerHTML = groups.length
+        ? groups.map((item) => '<option value="' + escapeHtml(item.group) + '">' + escapeHtml(item.group) + '</option>').join('')
+        : '<option value="">เลือกกลุ่มเป้าหมาย</option>';
+
+      if (preferred && [...groupSelect.options].some((option) => option.value === preferred)) {
+        groupSelect.value = preferred;
+      }
+
+      document.getElementById('guideChecklist').innerHTML = (state.proposalGuides.checklist || [])
+        .map((item) => '<span>' + escapeHtml(item) + '</span>')
+        .join('');
+      renderGuideActivities();
+    }
+
+    function renderGuideActivities() {
+      const groupName = document.getElementById('guideGroup').value;
+      const activitySelect = document.getElementById('guideActivity');
+      const group = (state.proposalGuides.activityGroups || []).find((item) => item.group === groupName);
+      const activities = group ? group.activities || [] : [];
+      activitySelect.innerHTML = activities.length
+        ? activities.map((item) => '<option value="' + escapeHtml(item) + '">' + escapeHtml(item) + '</option>').join('')
+        : '<option value="">ไม่พบรายการกิจกรรม</option>';
+
+      const modalOpen = document.getElementById('projectModal').classList.contains('show');
+      const form = document.getElementById('projectForm');
+      if (modalOpen && groupName && !form.elements.targetGroups.value.trim()) {
+        form.elements.targetGroups.value = groupName;
+      }
+    }
+
+    function insertGuideActivity() {
+      const form = document.getElementById('projectForm');
+      const groupName = document.getElementById('guideGroup').value;
+      const activity = document.getElementById('guideActivity').value;
+      if (groupName) form.elements.targetGroups.value = appendUniqueLine(form.elements.targetGroups.value, groupName);
+      if (activity) {
+        form.elements.mainActivities.value = appendUniqueLine(form.elements.mainActivities.value, activity);
+        if (!form.elements.activityPlan.value.trim()) {
+          form.elements.activityPlan.value = 'ดำเนินกิจกรรม ' + activity + ' ให้ครอบคลุมกลุ่มเป้าหมายในพื้นที่';
+        }
+      }
+      showToast('เติมกิจกรรมจากคู่มือแล้ว');
+    }
+
+    function buildDraftProposal() {
+      const form = document.getElementById('projectForm');
+      const groupName = form.elements.targetGroups.value.trim() || document.getElementById('guideGroup').value;
+      const group = (state.proposalGuides.activityGroups || []).find((item) => item.group === groupName);
+      const guideActivity = document.getElementById('guideActivity').value;
+      const activities = splitMultiValue(form.elements.mainActivities.value);
+      const starterActivities = activities.length
+        ? activities
+        : uniqueValues([guideActivity, ...((group && group.activities) || []).slice(0, 3)]);
+
+      if (groupName) form.elements.targetGroups.value = groupName;
+      if (starterActivities.length) form.elements.mainActivities.value = starterActivities.join('\n');
+
+      const payload = readFormPayload(form);
+      const projectName = payload.projectName || 'โครงการส่งเสริมสุขภาพและป้องกันโรคในพื้นที่';
+      const tambon = payload.tambon || 'พื้นที่รับผิดชอบ';
+      const targetText = payload.targetGroups || groupName || 'ประชาชนกลุ่มเป้าหมาย';
+      const countText = payload.targetCount ? payload.targetCount + ' คน' : 'ตามทะเบียนกลุ่มเป้าหมายในพื้นที่';
+      const areaText = payload.operationArea || 'พื้นที่รับผิดชอบของกองทุนฯ';
+
+      setIfBlank(form, 'fundLevel', state.lists.fundLevels[0] || 'กองทุนตำบล');
+      setIfBlank(form, 'planAlignment', guessPlanAlignment(payload));
+      setIfBlank(form, 'supportCategory', guessSupportCategory(payload));
+      setIfBlank(form, 'ownerName', payload.service || payload.affiliation || tambon);
+      setIfBlank(form, 'ownerType', guessOwnerType(payload));
+      setIfBlank(form, 'operationArea', areaText);
+      setIfBlank(form, 'principles',
+        tambon + ' มีความจำเป็นต้องดำเนินงานส่งเสริมสุขภาพ ป้องกันโรค และลดปัจจัยเสี่ยงที่กระทบต่อ ' + targetText +
+        ' โดยใช้ข้อมูลสุขภาพและสถานการณ์ปัญหาในพื้นที่เป็นฐาน เพื่อให้ประชาชนเข้าถึงบริการและกิจกรรมที่เหมาะสม ลดความเสี่ยง และเกิดการดูแลต่อเนื่องในชุมชน');
+      setIfBlank(form, 'objectives', [
+        '1. เพื่อส่งเสริมสุขภาพและป้องกันโรคให้แก่ ' + targetText,
+        '2. เพื่อให้กลุ่มเป้าหมายจำนวน ' + countText + ' เข้าถึงกิจกรรมหรือบริการที่จำเป็น',
+        '3. เพื่อพัฒนาระบบติดตาม ดูแล และรายงานผลการดำเนินงานในพื้นที่',
+      ].join('\n'));
+      setIfBlank(form, 'indicators', [
+        '1. กลุ่มเป้าหมายเข้าร่วมกิจกรรมไม่น้อยกว่าร้อยละ 80',
+        '2. ผู้เข้าร่วมมีความรู้หรือพฤติกรรมสุขภาพดีขึ้นหลังเข้าร่วมกิจกรรม',
+        '3. มีรายงานผลการดำเนินงานและสรุปการใช้จ่ายงบประมาณตามกำหนด',
+      ].join('\n'));
+      setIfBlank(form, 'implementationMethods', [
+        '1. สำรวจและทบทวนข้อมูลกลุ่มเป้าหมาย/สถานการณ์ปัญหาในพื้นที่',
+        '2. ประชุมวางแผนร่วมกับภาคี เครือข่าย หรือคณะทำงานที่เกี่ยวข้อง',
+        '3. ดำเนินกิจกรรมตามแผนให้ครอบคลุมกลุ่มเป้าหมาย',
+        '4. ติดตาม ประเมินผล และปรับปรุงการดำเนินงานระหว่างโครงการ',
+        '5. สรุปรายงานผลและหลักฐานการใช้จ่ายต่อกองทุน',
+      ].join('\n'));
+      setIfBlank(form, 'activityPlan', starterActivities.map((activity, index) => (index + 1) + '. ' + activity).join('\n'));
+      setIfBlank(form, 'budgetDetails', [
+        'งบประมาณรวม ' + money.format(Number(payload.budget) || 0) + ' บาท',
+        'โปรดแยกรายการค่าใช้จ่ายให้สัมพันธ์กับกิจกรรม เช่น ค่าวัสดุ อุปกรณ์ เอกสาร สื่อ อาหาร/อาหารว่าง ค่าตอบแทนวิทยากร หรือค่าใช้จ่ายอื่นที่จำเป็นตามระเบียบกองทุน',
+      ].join('\n'));
+      setIfBlank(form, 'expectedResults', [
+        '1. ' + targetText + ' ได้รับการส่งเสริมสุขภาพ ป้องกันโรค หรือลดปัจจัยเสี่ยงตามวัตถุประสงค์',
+        '2. พื้นที่มีข้อมูลและกลไกติดตามดูแลกลุ่มเป้าหมายอย่างต่อเนื่อง',
+        '3. การใช้จ่ายงบประมาณเป็นไปตามแผน โปร่งใส และตรวจสอบได้',
+      ].join('\n'));
+      setIfBlank(form, 'evaluationPlan', [
+        'ติดตามจากทะเบียนผู้เข้าร่วม แบบประเมินก่อน-หลัง หลักฐานกิจกรรม ภาพถ่าย รายงานผลลัพธ์ตามตัวชี้วัด และสรุปรายงานการเงินเมื่อเสร็จสิ้นโครงการ',
+      ].join('\n'));
+      if (!form.elements.reportDueDate.value && form.elements.endDate.value) {
+        form.elements.reportDueDate.value = addDaysDateString(form.elements.endDate.value, 30);
+      }
+
+      form.elements.proposalText.value = buildProposalText(readFormPayload(form));
+      showToast('สร้างโครงร่างคำขอจากคู่มือแล้ว');
+    }
+
+    function calculateClientMetrics(projects) {
+      const groups = { byStatus: {}, byTambon: {}, byTargetGroup: {} };
+      projects.forEach((project) => {
+        addClientMetric(groups.byStatus, project.status || '-', project);
+        addClientMetric(groups.byTambon, project.tambon || '-', project);
+        const targetGroups = splitMultiValue(project.targetGroups);
+        (targetGroups.length ? targetGroups : ['ยังไม่ระบุกลุ่มเป้าหมาย']).forEach((targetGroup) => {
+          addClientMetric(groups.byTargetGroup, targetGroup, project);
+        });
+      });
+      return {
+        byStatus: objectToMetricRows(groups.byStatus),
+        byTambon: objectToMetricRows(groups.byTambon),
+        byTargetGroup: objectToMetricRows(groups.byTargetGroup),
+      };
+    }
+
+    function addClientMetric(bucket, name, project) {
+      if (!bucket[name]) bucket[name] = { name, count: 0, budget: 0, used: 0, remaining: 0 };
+      bucket[name].count += 1;
+      bucket[name].budget += Number(project.budget) || 0;
+      bucket[name].used += Number(project.used) || 0;
+      bucket[name].remaining += Number(project.remaining) || 0;
+    }
+
+    function objectToMetricRows(bucket) {
+      return Object.values(bucket).sort((a, b) => String(a.name).localeCompare(String(b.name), 'th'));
+    }
+
+    function readFormPayload(form) {
+      const fields = [
+        'id',
+        'projectName',
+        'tambon',
+        'service',
+        'affiliation',
+        'fundType',
+        'budget',
+        'used',
+        'status',
+        'fiscalYear',
+        'fundLevel',
+        'proposalType',
+        'planAlignment',
+        'supportCategory',
+        'ownerName',
+        'ownerType',
+        'responsiblePeople',
+        'targetGroups',
+        'targetCount',
+        'startDate',
+        'endDate',
+        'mainActivities',
+        'principles',
+        'objectives',
+        'indicators',
+        'operationArea',
+        'implementationMethods',
+        'activityPlan',
+        'budgetDetails',
+        'expectedResults',
+        'evaluationPlan',
+        'reportDueDate',
+        'approvalResult',
+        'approvedBudget',
+        'approvalNotes',
+        'proposalText',
+        'notes',
+      ];
+      return fields.reduce((payload, field) => {
+        payload[field] = form.elements[field] ? form.elements[field].value : '';
+        return payload;
+      }, {});
+    }
+
+    function buildProposalText(project) {
+      const activities = compactList(project.mainActivities) || '-';
+      return [
+        'แบบเสนอแผนงาน / โครงการ / กิจกรรม ' + (project.fundLevel || 'กองทุนตำบล'),
+        'ชื่อโครงการ: ' + (project.projectName || '-'),
+        'ผู้ขอรับทุน: ' + (project.ownerName || project.service || '-'),
+        'ประเภทผู้ขอรับทุน: ' + (project.ownerType || '-'),
+        'แผนงาน / ประเด็นสุขภาพ / ประเด็นจังหวัดที่สอดคล้อง: ' + (project.planAlignment || '-'),
+        'ประเภทการสนับสนุน: ' + (project.supportCategory || project.fundType || '-'),
+        'กลุ่มเป้าหมาย: ' + (project.targetGroups || '-') + ' จำนวน ' + (project.targetCount || '-') + ' คน',
+        'พื้นที่ดำเนินการ: ' + (project.operationArea || project.tambon || '-'),
+        'ระยะเวลา: ' + formatDateRange(project),
+        'งบประมาณที่ขอ: ' + money.format(Number(project.budget) || 0) + ' บาท',
+        '',
+        'หลักการและเหตุผล',
+        project.principles || '-',
+        '',
+        'วัตถุประสงค์',
+        project.objectives || '-',
+        '',
+        'ตัวชี้วัด / เป้าหมาย',
+        project.indicators || '-',
+        '',
+        'กิจกรรมหลัก',
+        activities,
+        '',
+        'ผลที่คาดว่าจะได้รับ',
+        project.expectedResults || '-',
+      ].join('\n');
+    }
+
+    function getProposalCompletion(project) {
+      const serverValue = Number(project && project.proposalCompletion);
+      const localValue = calculateProposalCompletion(project || {});
+      if (Number.isFinite(serverValue)) return Math.max(0, Math.min(100, Math.round(Math.max(serverValue, localValue))));
+      return localValue;
+    }
+
+    function calculateProposalCompletion(project) {
+      const required = [
+        'projectName',
+        'tambon',
+        'fundLevel',
+        'planAlignment',
+        'supportCategory',
+        'ownerName',
+        'ownerType',
+        'targetGroups',
+        'targetCount',
+        'principles',
+        'objectives',
+        'indicators',
+        'startDate',
+        'endDate',
+        'operationArea',
+        'implementationMethods',
+        'activityPlan',
+        'budgetDetails',
+        'expectedResults',
+        'evaluationPlan',
+      ];
+      const complete = required.filter((field) => {
+        if (field === 'targetCount') return Number(project[field]) > 0;
+        return String(project[field] || '').trim().length > 0;
+      }).length;
+      return Math.round((complete / required.length) * 100);
+    }
+
+    function completionClass(value) {
+      if (value >= 80) return 'ready';
+      if (value >= 50) return 'warn';
+      return 'low';
+    }
+
+    function setIfBlank(form, field, value) {
+      if (form.elements[field] && !String(form.elements[field].value || '').trim()) {
+        form.elements[field].value = value || '';
+      }
+    }
+
+    function guessSupportCategory(project) {
+      const text = [project.supportCategory, project.fundType, project.ownerType, project.ownerName, project.service].join(' ');
+      if (/10\s*\(?1\)?|รพ\.?สต|PCU|สถานบริการ|สาธารณสุข/i.test(text)) return state.lists.supportCategories[0] || DEFAULT_PROPOSAL_GUIDES.supportCategories[0];
+      if (/10\s*\(?3\)?|ศูนย์|เด็กเล็ก|ผู้สูงอายุ|คนพิการ/i.test(text)) return state.lists.supportCategories[2] || DEFAULT_PROPOSAL_GUIDES.supportCategories[2];
+      if (/10\s*\(?4\)?|บริหาร|พัฒนากองทุน/i.test(text)) return state.lists.supportCategories[3] || DEFAULT_PROPOSAL_GUIDES.supportCategories[3];
+      if (/10\s*\(?5\)?|ระบาด|ภัยพิบัติ/i.test(text)) return state.lists.supportCategories[4] || DEFAULT_PROPOSAL_GUIDES.supportCategories[4];
+      return state.lists.supportCategories[1] || DEFAULT_PROPOSAL_GUIDES.supportCategories[1];
+    }
+
+    function guessPlanAlignment(project) {
+      if (project.planAlignment) return project.planAlignment;
+      if (project.fundLevel === 'กองทุนจังหวัด' || project.proposalType === 'ประเด็นจังหวัด / บูรณาการพื้นที่') {
+        return 'ประเด็นสุขภาพระดับจังหวัด / แผนสุขภาพจังหวัดที่สอดคล้องกับปัญหาในพื้นที่';
+      }
+      return 'แผนสุขภาพชุมชน / แผนงานกองทุนที่สอดคล้องกับสถานการณ์ปัญหาในพื้นที่';
+    }
+
+    function guessOwnerType(project) {
+      const text = [project.ownerType, project.fundType, project.ownerName, project.service, project.affiliation].join(' ');
+      if (/รพ\.?สต|PCU|โรงพยาบาล|สถานบริการ/i.test(text)) return 'หน่วยบริการหรือสถานบริการสาธารณสุข';
+      if (/สาธารณสุข/i.test(text)) return 'หน่วยงานสาธารณสุข';
+      if (/โรงเรียน|วัด|หน่วยงาน/i.test(text)) return 'หน่วยงานอื่น';
+      if (/ชมรม|กลุ่ม|อสม|อาสา/i.test(text)) return 'องค์กรหรือกลุ่มประชาชน';
+      if (/ศูนย์/i.test(text)) return 'ศูนย์พัฒนาเด็กเล็ก / ศูนย์ผู้สูงอายุ / ศูนย์คนพิการ';
+      if (/อบต|เทศบาล|อปท/i.test(text)) return 'องค์กรปกครองส่วนท้องถิ่น (อปท.)';
+      return state.lists.ownerTypes[0] || DEFAULT_PROPOSAL_GUIDES.ownerTypes[0];
+    }
+
+    function splitMultiValue(value) {
+      return String(value || '')
+        .split(/[\n,;|]+/)
+        .map((item) => item.replace(/^[\s\-*•]+/, '').trim())
+        .filter(Boolean);
+    }
+
+    function compactList(value) {
+      const items = splitMultiValue(value);
+      if (items.length <= 2) return items.join(', ');
+      return items.slice(0, 2).join(', ') + ' +' + (items.length - 2);
+    }
+
+    function appendUniqueLine(current, value) {
+      const cleanValue = String(value || '').trim();
+      if (!cleanValue) return String(current || '').trim();
+      const lines = splitMultiValue(current);
+      if (lines.includes(cleanValue)) return lines.join('\n');
+      lines.push(cleanValue);
+      return lines.join('\n');
+    }
+
+    function uniqueValues(values) {
+      const source = Array.isArray(values) ? values : [values];
+      return [...new Set(source.map((value) => String(value || '').trim()).filter(Boolean))];
+    }
+
+    function pushUnique(list, value) {
+      const cleanValue = String(value || '').trim();
+      if (cleanValue && !list.includes(cleanValue)) list.push(cleanValue);
+    }
+
+    function formatDateRange(project) {
+      const start = formatDateValue(project.startDate);
+      const end = formatDateValue(project.endDate);
+      if (start && end) return start + ' - ' + end;
+      return start || end || '-';
+    }
+
+    function formatDateValue(value) {
+      if (!value) return '';
+      let date;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        const parts = value.split('-').map(Number);
+        date = new Date(parts[0], parts[1] - 1, parts[2]);
+      } else {
+        date = new Date(value);
+      }
+      if (Number.isNaN(date.getTime())) return String(value);
+      return date.toLocaleDateString('th-TH', { dateStyle: 'medium' });
+    }
+
+    function addDaysDateString(value, days) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return '';
+      const parts = value.split('-').map(Number);
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      date.setDate(date.getDate() + days);
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, '0'),
+        String(date.getDate()).padStart(2, '0'),
+      ].join('-');
+    }
+
+    function compareValue(a, b) {
+      const numberA = Number(a);
+      const numberB = Number(b);
+      if (Number.isFinite(numberA) && Number.isFinite(numberB)) return numberA - numberB;
+      return String(a || '').localeCompare(String(b || ''), 'th');
+    }
+
+    function statusClass(status) {
+      if (status === 'ดำเนินการแล้ว') return 'status-done';
+      if (status === 'ระหว่างดำเนินการ') return 'status-active';
+      if (status === 'ยกเลิกดำเนินการ') return 'status-cancel';
+      return 'status-wait';
+    }
+
+    function statusClassForBar(status) {
+      if (status === 'ดำเนินการแล้ว') return 'done';
+      if (status === 'ระหว่างดำเนินการ') return 'active';
+      if (status === 'ยกเลิกดำเนินการ') return 'cancel';
+      return 'wait';
+    }
+
+    function formatDateTime(value) {
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return value || '-';
+      return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function setBusy(value) {
+      state.busy = value;
+      document.querySelectorAll('button, input, select, textarea').forEach((element) => {
+        element.disabled = value;
+      });
+    }
+
+    function showToast(message, isError) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.toggle('error', Boolean(isError));
+      toast.classList.add('show');
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove('show'), 3600);
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
+</body>
+</html>
